@@ -4,7 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract FundMe {
-    mapping(address => uint256) public mapAddressToValue;
+    mapping(address => uint256) public addressToAmountFunded;
     address public owner;
     address[] public funders;
     AggregatorV3Interface public priceFeed;
@@ -16,7 +16,7 @@ contract FundMe {
 
     function fundMe() public payable {
         require(msg.value > 650000000000000, "Spend at least 50 Usd");
-        mapAddressToValue[msg.sender] += msg.value;
+        addressToAmountFunded[msg.sender] += msg.value;
         funders.push(msg.sender);
     }
 
@@ -48,8 +48,27 @@ contract FundMe {
             funderIndx++
         ) {
             address funder = funders[funderIndx];
-            mapAddressToValue[funder] = 0;
+            addressToAmountFunded[funder] = 0;
         }
         funders = new address[](0);
+    }
+
+    function getEntranceFee() public view returns (uint256) {
+        // minimumUSD
+        uint256 minimumUSD = 50 * 10**18;
+        uint256 price = getPrice();
+        uint256 precision = 1 * 10**18;
+        // return (minimumUSD * precision) / price;
+        // We fixed a rounding error found in the video by adding one!
+        return ((minimumUSD * precision) / price) + 1;
+    }
+        function fund() public payable {
+        uint256 minimumUSD = 50 * 10**18;
+        require(
+            getConversionRate(msg.value) >= minimumUSD,
+            "You need to spend more ETH!"
+        );
+        addressToAmountFunded[msg.sender] += msg.value;
+        funders.push(msg.sender);
     }
 }

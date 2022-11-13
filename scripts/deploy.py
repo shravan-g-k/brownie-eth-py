@@ -1,4 +1,6 @@
+# finished on 9 Nov 2022
 from brownie import accounts, config, SimpleStorage, network
+from scripts.helpful import get_account
 
 
 def deploy_simple_storage():
@@ -10,13 +12,6 @@ def deploy_simple_storage():
     transaction.wait(1)
     updated_stored_value = simple_storage.get_fav_no()
     print(updated_stored_value)
-
-
-def get_account():
-    if network.show_active() == "devlopment":
-        return accounts[0]
-    else:
-        return accounts.add(config["wallets"]["key"])
 
 
 def main():
